@@ -213,12 +213,12 @@ const RestroInfo = () => {
 
                 <div className="flex w-full justify-between items-start ">
                     {/* Logo (Editable) */}
-                    <div className="relative flex items-center h-20 w-20">
+                    <div className="relative flex items-center h-10 w-10">
                         <label htmlFor="logoUpload" className="cursor-pointer">
                             {navData.logo ? (
-                                <img src={navData.logo} alt="Logo" className="h-20 w-20 object-contain rounded-full" />
+                                <img src={navData.logo} alt="Logo" className="h-10 w-10 object-contain rounded-full" />
                             ) : (
-                                <span className="flex justify-center items-center h-20 w-20 bg-gray-300 rounded-full">
+                                <span className="flex justify-center items-center h-10 w-10 bg-gray-300 rounded-full">
                                     <FaCamera className="text-gray-500" />
                                 </span>
                             )}

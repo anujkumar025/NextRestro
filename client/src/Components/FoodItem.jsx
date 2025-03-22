@@ -40,36 +40,36 @@ const FoodItem = ({ item, menuStyle, theme }) => {
             {menuStyle === "style-1" && (
                 <div
 
-                    className={`relative w-full m-1 shadow-lg overflow-hidden ${theme.cardBg}`}>
+                    className={`relative w-full rounded-md shadow-lg overflow-hidden ${theme.cardBg}`}>
                     {isAdmin && (
                         <div
                             className="">
                             <div
                                 onClick={deleteMenuItem}
-                                className="absolute z-20 left-1 top-1 flex items-center shadow-md cursor-pointer justify-center p-2 bg-white border rounded-full pointer-events-auto"
+                                className="absolute z-20 right-6 top-1 flex items-center shadow-md cursor-pointer justify-center p-1 bg-white border rounded-full pointer-events-auto"
 
                             >
-                                <DeleteIcon className="text-red-500 w-4 h-4" />
+                                <DeleteIcon className="text-red-500 w-2 h-2" />
                             </div>
                             <div
                                 onClick={handleEditFood}
-                                className="absolute z-20 right-1 top-1 flex items-center cursor-pointer justify-center p-2 bg-white border shadow-md rounded-full pointer-events-auto"
+                                className="absolute z-20 right-1 top-1 flex items-center cursor-pointer justify-center p-1 bg-white border shadow-md rounded-full pointer-events-auto"
                             >
-                                <EditIcon className="text-green-500 w-4 h-4" />
+                                <EditIcon className="text-green-500 w-2 h-2" />
                             </div>
                         </div>
                     )}
 
                     {/* Image Section */}
-                    <div className="relative w-full h-36">
+                    <div className="relative w-full h-18">
                         <Image src={item.image} alt={item.name} layout="fill" objectFit="cover" className="" />
-                        <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-b from-transparent to-inherit"></div>
+
                     </div>
 
                     {/* Food Info */}
-                    <div className={`px-1 mb-4 flex justify-between items-center `}>
-                        <h3 className={`text-lg md:text-md lg:text-lg font-mono font-bold ${theme.text}`}>{item.name}</h3>
-                        <p className={` px-2 md:px-4 lg:px-8 text-sm md:text-md font-mono font-light${theme.text}`}>{item.price}</p>
+                    <div className={`mb-2 px-1 flex justify-between items-center`}>
+                        <h3 className={`text-xs md:text-md lg:text-lg font-mono ${theme.text}`}>{item.name}</h3>
+                        <p className={`text-xs md:px-4 lg:px-8 md:text-md font-mono font-extrabold${theme.text}`}>{item.price}</p>
                     </div>
                 </div>
             )
@@ -78,26 +78,29 @@ const FoodItem = ({ item, menuStyle, theme }) => {
             {/* Stacked Style (style-2) */}
             {
                 menuStyle === "style-2" && (
-                    <div className={`flex w-full shadow-lg p-2 rounded-lg ${theme.cardBg}`}>
+                    <div className={`flex w-full shadow-lg p-1 rounded-sm  ${theme.cardBg}`}>
                         {/* Image */}
 
-                        <div className="relative w-32 h-32">
+                        <div className="relative w-20 h-18">
                             <Image src={item.image} alt={item.name} layout="fill" objectFit="cover" className="" />
                         </div>
 
                         {/* Food Details */}
-                        <div className="flex-1 flex flex-col justify-center ml-4">
-                            <h3 className={`text-sm md:text-md font-mono font-light ${theme.text}`}>{item.name}</h3>
-                            <p className={`text-sm md:text-md font-mono font-light ${theme.text}`}>{item.price}</p>
+                        <div className="flex-1 flex flex-col justify-start gap-2 ml-4">
+                            <h3 className={`text-md font-bold md:text-md font-mono font-bold ${theme.text}`}>{item.name}</h3>
+                            <p className={` md:text-md text-xs font-mono font-light ${theme.text}`}>{item.price}</p>
                         </div>
                         {
                             isAdmin && <div className="relative">
 
-                                <div className="absolute z-20 right-10 flex item-center shadow-md cursor-pointer justify-center p-2 bg-white border rounded-full">
-                                    <DeleteIcon className="text-red-500 w-4 h-4" />
+                                <div className="absolute z-20 right-10 flex item-center shadow-md cursor-pointer justify-center p-1 bg-white border rounded-full">
+                                    <DeleteIcon
+                                        onClick={deleteMenuItem}
+                                        className="text-red-500 w-3 h-3" />
                                 </div>
-                                <div className="absolute z-20 right-0 flex item-center cursor-pointer justify-center p-2 bg-white border rounded-full">
-                                    <EditIcon className="text-green-500 w-4 h-4" />
+                                <div
+                                    onClick={handleEditFood} className="absolute z-20 right-0 flex item-center cursor-pointer justify-center p-1 bg-white border rounded-full">
+                                    <EditIcon className="text-green-500 w-3 h-3" />
                                 </div>
                             </div>
                         }
