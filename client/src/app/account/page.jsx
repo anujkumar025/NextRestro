@@ -53,7 +53,7 @@ const Register = () => {
         setSuccess("");
 
         try {
-            const { data } = await axios.post("http://localhost:5001/api/login", formData);
+            const { data } = await axios.post("http://localhost:5000/api/login", formData);
             console.log(data);
 
             localStorage.setItem("authToken", data.token);

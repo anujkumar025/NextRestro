@@ -42,6 +42,7 @@ export default function Menu({ restaurantId }) {
     const form = useForm()
 
     useEffect(() => {
+        console.log(restaurantId)
         const fetchMenu = async () => {
             try {
                 const response = await axios.get(`${URL}/api/restaurant/${restaurantId}/menu`);

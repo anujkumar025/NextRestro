@@ -8,10 +8,11 @@ const RestaurantContext = createContext();
 // Create a provider component
 export const RestaurantProvider = ({ children }) => {
     const [isAdmin, setIsAdmin] = useState(false);
-
-
+    const [flag, setFlag] = useState(false)
+    const [editFlag, setEditFlag] = useState(false)
+    const [totalFood, setTotalFood] = useState(0)
     return (
-        <RestaurantContext.Provider value={{ isAdmin, setIsAdmin }}>
+        <RestaurantContext.Provider value={{ isAdmin, setIsAdmin, flag, setFlag, editFlag, setEditFlag, totalFood, setTotalFood }}>
             {children}
         </RestaurantContext.Provider>
     );
