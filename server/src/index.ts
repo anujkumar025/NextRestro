@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import { Menu, Restaurant } from "./models";
+import { IMenu, Menu, Restaurant } from "./models";
 import jwt from "jsonwebtoken";
 import { authenticate } from "./authorize";
 import multer from "multer";
@@ -8,7 +8,7 @@ import cors from "cors";
 import { config } from "dotenv";
 
 config();
-const PORT = 5001;
+const PORT = 5000;
 const app = express();
 app.use(cors());
 
@@ -327,20 +327,29 @@ app.get("/api/:id", async (req:Request, res: Response): Promise<any> => {
 app.get("/api/restaurant/:id/menu", async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
-        
-        // Find the restaurant and populate the menu field
-        const restaurant = await Restaurant.findById(id).populate("menu");
 
-        if (!restaurant) {
-            return res.status(404).json({ message: "Restaurant not found" });
+        // Find the restaurant and populate the menu as an array of IMenu objects
+        const restaurant = await Restaurant.findById(id).populate<{ menu: IMenu[] }>("menu").lean();
+
+        if (!restaurant || !restaurant.menu || restaurant.menu.length === 0) {
+            return res.status(404).json({ message: "Restaurant not found or no menu available" });
         }
 
-        res.status(200).json(restaurant.menu); // Send only the menu
+        // Now TypeScript correctly recognizes menu items as IMenu objects
+        const menuWithImages = restaurant.menu.map((item) => ({
+            ...item,
+            image: item.image ? `data:image/png;base64,${item.image}` : null,
+        }));
+
+        res.status(200).json(menuWithImages);
     } catch (error) {
         console.error("Error fetching restaurant menu:", error);
         res.status(500).json({ message: "Internal Server Error❌" });
     }
 });
+
+
+
 
 // Start server
 app.listen(PORT, () => {
