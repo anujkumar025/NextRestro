@@ -284,44 +284,67 @@ app.delete("/api/menu/:itemId", authenticate, async (req: Request, res: Response
 });
 
 // Get restaurant details without menu
-app.get("/api/restaurant", authenticate, async (req:Request, res: Response): Promise<any> => {
+app.get("/api/restaurant", authenticate, async (req: Request, res: Response): Promise<any> => {
     try {
-        
         const restaurantId = (req as any).restaurant.id;
-        console.log(restaurantId)
-        
-        // Find the restaurant and exclude 'menu' field
-        const restaurant = await Restaurant.findById(restaurantId).select("-menu -password");
+        console.log(restaurantId);
+
+        // Find the restaurant and exclude 'menu' and 'password' fields
+        const restaurant = await Restaurant.findById(restaurantId).select("-menu -password").lean();
 
         if (!restaurant) {
             return res.status(404).json({ message: "Restaurant not found" });
         }
 
-        res.status(200).json(restaurant);
+        // Convert images to Base64 format if they exist
+        const restaurantWithImages = {
+            ...restaurant,
+            profilePicture: restaurant.profilePicture
+                ? `data:image/png;base64,${restaurant.profilePicture}`
+                : null,
+            bannerPicture: restaurant.bannerPicture
+                ? `data:image/png;base64,${restaurant.bannerPicture}`
+                : null,
+        };
+
+        res.status(200).json(restaurantWithImages);
     } catch (error) {
         console.error("Error fetching restaurant:", error);
         res.status(500).json({ message: "Internal Server Error❌" });
     }
 });
+
 // Get restaurant details without menu
-app.get("/api/:id", async (req:Request, res: Response): Promise<any> => {
+app.get("/api/:id", async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
-        console.log(id)
-        
-        // Find the restaurant and exclude 'menu' field
-        const restaurant = await Restaurant.findById(id).select("-menu -password");
+        console.log(id);
+
+        // Find the restaurant and exclude 'menu' and 'password' fields
+        const restaurant = await Restaurant.findById(id).select("-menu -password").lean();
 
         if (!restaurant) {
             return res.status(404).json({ message: "Restaurant not found" });
         }
 
-        res.status(200).json(restaurant);
+        // Convert images to Base64 format if they exist
+        const restaurantWithImages = {
+            ...restaurant,
+            profilePicture: restaurant.profilePicture
+                ? `data:image/png;base64,${restaurant.profilePicture}`
+                : null,
+            bannerPicture: restaurant.bannerPicture
+                ? `data:image/png;base64,${restaurant.bannerPicture}`
+                : null,
+        };
+
+        res.status(200).json(restaurantWithImages);
     } catch (error) {
         console.error("Error fetching restaurant:", error);
         res.status(500).json({ message: "Internal Server Error❌" });
     }
 });
+
 
 // Get menu of a restaurant by restaurant ID
 app.get("/api/restaurant/:id/menu", async (req: Request, res: Response): Promise<any> => {
