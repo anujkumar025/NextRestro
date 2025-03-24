@@ -42,8 +42,8 @@ const RestroInfo = () => {
                 localStorage.setItem("restaurantId", data._id);
 
                 setNavData({
-                    logo: data.profilePicture ? `data:image/png;base64,${data.profilePicture}` : null,
-                    banner: data.bannerPicture ? `data:image/png;base64,${data.bannerPicture}` : null,
+                    logo: data.profilePicture ? data.profilePicture : null,
+                    banner: data.bannerPicture ? data.bannerPicture : null,
                     heading: data.name || "Explore Our Delicious Menu",
                     phone: data.phone || "+91 8762340134",
                     instagram: data.instagram || "7juned7",

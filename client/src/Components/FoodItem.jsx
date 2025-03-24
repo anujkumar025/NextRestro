@@ -88,7 +88,7 @@ const FoodItem = ({ item, menuStyle, theme }) => {
                         {/* Food Details */}
                         <div className="flex-1 flex flex-col justify-start gap-2 ml-4">
                             <h3 className={`text-md font-bold md:text-md font-mono font-bold ${theme.text}`}>{item.name}</h3>
-                            <p className={` md:text-md text-xs font-mono font-light ${theme.text}`}>{item.price}</p>
+                            <p className={` md:text-md text-xs font-mono font-light ${theme.text}`}>₹ {item.price}</p>
                         </div>
                         {
                             isAdmin && <div className="relative">

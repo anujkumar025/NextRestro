@@ -113,20 +113,21 @@ app.put(
         try {
             const restaurantId = (req as any).restaurant.id;
             let { name, description, phone, instagram } = req.body;
-            // Extract colors into an object with explicit typing
-            const colors: Record<string, string> = Object.keys(req.body)
-            .filter(key => key.startsWith('colors.'))
+            
+            // Extract customizeTheme into an object with explicit typing
+            const customizeTheme: Record<string, string> = Object.keys(req.body)
+            .filter(key => key.startsWith('customizeTheme.'))
             .reduce((acc: Record<string, string>, key) => {
-            const colorKey = key.split('.')[1]; // Extract 'dark', 'medium', 'light'
-            acc[colorKey] = req.body[key];
-            return acc;
+                const themeKey = key.split('.')[1]; // Extract 'bgColor', 'cardBgColor', 'textColor', 'highlightColor'
+                acc[themeKey] = req.body[key];
+                return acc;
             }, {} as Record<string, string>);
 
-            // Remove original color properties from req.body
-            Object.keys(colors).forEach(key => delete req.body[`colors.${key}`]);
+            // Remove original theme properties from req.body
+            Object.keys(customizeTheme).forEach(key => delete req.body[`customizeTheme.${key}`]);
 
-            // Add the transformed colors object to req.body
-            req.body.colors = colors;
+            // Add the transformed customizeTheme object to req.body
+            req.body.customizeTheme = customizeTheme;
 
             // Handle image uploads
             const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
@@ -141,7 +142,7 @@ app.put(
                     description,
                     phone,
                     instagram,
-                    colors, // Now properly formatted as an object
+                    customizeTheme, // Now properly formatted as an object
                     ...(profilePicture && { profilePicture }), // Update only if new image is provided
                     ...(bannerPicture && { bannerPicture }),
                 },
@@ -160,6 +161,7 @@ app.put(
         }
     }
 );
+
 
 
 // Add menu item to restaurant
@@ -287,7 +289,7 @@ app.delete("/api/menu/:itemId", authenticate, async (req: Request, res: Response
 app.get("/api/restaurant", authenticate, async (req: Request, res: Response): Promise<any> => {
     try {
         const restaurantId = (req as any).restaurant.id;
-        console.log(restaurantId);
+        // console.log(restaurantId);
 
         // Find the restaurant and exclude 'menu' and 'password' fields
         const restaurant = await Restaurant.findById(restaurantId).select("-menu -password").lean();
@@ -318,7 +320,7 @@ app.get("/api/restaurant", authenticate, async (req: Request, res: Response): Pr
 app.get("/api/:id", async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
-        console.log(id);
+        // console.log(id);
 
         // Find the restaurant and exclude 'menu' and 'password' fields
         const restaurant = await Restaurant.findById(id).select("-menu -password").lean();
