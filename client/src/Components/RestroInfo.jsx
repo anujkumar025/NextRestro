@@ -1,14 +1,18 @@
 "use client"; // Only needed for Next.js App Router (if using `app/` instead of `pages/`)
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import EditIcon from "../utils/EditIcon"
-import { FaCamera, FaEdit, FaInstagram, FaUserShield, FaPen } from "react-icons/fa";
-import { useRestaurant } from "@/Context/RestaurantContext";
+import { FaCamera, FaEdit, FaInstagram, FaUserShield, FaPen, FaSignOutAlt, FaSave } from "react-icons/fa";
+
 import axios from "axios"; // Import Axios
-// import { RestaurantContexts } from "../Contexts/RestaurantsContext";
+import { useRestaurant } from "@/Context/RestaurantContext";
+
 
 const RestroInfo = () => {
-    // const { restaurantId } = useContext(RestaurantContexts);
+    const { themes, setCustomTheme } = useRestaurant();
+
+    const [showOptions, setShowOptions] = useState(false)
+    const [editing, setEditing] = useState(false);
     const { isAdmin, setIsAdmin } = useRestaurant();
     const restaurantId = "67d93b95dd42f9512a7b44d6"
     const [navData, setNavData] = useState({
@@ -20,8 +24,11 @@ const RestroInfo = () => {
         instagram: null,
         heading: null,
         description: null,
-        colors: { dark: "#000000", light: "#ffffff" },
+        customizeTheme: null,
+
     });
+
+
 
     const [editingField, setEditingField] = useState(null);
     const headingRef = useRef(null);
@@ -40,21 +47,28 @@ const RestroInfo = () => {
                 });
 
                 localStorage.setItem("restaurantId", data._id);
-
+                console.log(data)
                 setNavData({
-                    logo: data.profilePicture ? `data:image/png;base64,${data.profilePicture}` : null,
-                    banner: data.bannerPicture ? `data:image/png;base64,${data.bannerPicture}` : null,
+                    logo: data.profilePicture ? `${data.profilePicture}` : null,
+                    banner: data.bannerPicture ? `${data.bannerPicture}` : null,
                     heading: data.name || "Explore Our Delicious Menu",
                     phone: data.phone || "+91 8762340134",
                     instagram: data.instagram || "7juned7",
+                    customizeTheme: data.customizeTheme,
                     description: data.description || "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
                     colors: data.colors || { dark: "#000000", light: "#ffffff" },
                 });
+                if (data.customizeTheme) {
+                    setCustomTheme((prevTheme) => ({
+                        ...prevTheme,
+                        ...data.customizeTheme, // Merge fetched theme with existing custom theme
+                    }));
+                }
+
             } catch (error) {
                 console.error("Error fetching profile:", error.response?.data || error.message);
             }
         };
-
         fetchNavData();
     }, []);
 
@@ -80,23 +94,22 @@ const RestroInfo = () => {
 
 
     const handleUpdate = async () => {
+        console.log("Before sending:", themes.custom);
+
         const formData = new FormData();
         formData.append("name", navData.heading);
         formData.append("description", navData.description);
         formData.append("phone", navData.phone);
         formData.append("instagram", navData.instagram);
+        formData.append("customizeTheme", JSON.stringify(themes.custom));
 
-        // Append colors
-        Object.keys(navData.colors).forEach((key) => {
-            formData.append(`colors.${key}`, navData.colors[key]);
-        });
 
         // Append images if changed
         if (navData.logoFile) formData.append("profilePicture", navData.logoFile);
         if (navData.bannerFile) formData.append("bannerPicture", navData.bannerFile);
 
         try {
-            const { data } = await axios.put("http://localhost:5001/api/update", formData, {
+            const { data } = await axios.put("http://localhost:5000/api/update", formData, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("authToken")}`,
                     "Content-Type": "multipart/form-data", // Required for FormData
@@ -104,8 +117,8 @@ const RestroInfo = () => {
             });
 
             // Create updated navData
-            console.log("updated")
-            alert("updated")
+            console.log("updated", data)
+
 
 
 
@@ -194,16 +207,57 @@ const RestroInfo = () => {
 
         console.log(editingField)
     }, [navData, isAdmin]);
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest(".admin-toggle")) {
+                setShowOptions(false);
+            }
+        };
+        document.addEventListener("click", handleClickOutside);
+        return () => document.removeEventListener("click", handleClickOutside);
+    }, []);
 
     return (
         <>
             {/* Toggle Admin Mode Button */}
-            <div
-                className="absolute bottom-4 right-4 flex items-center justify-center w-12 h-12 bg-gray-800 text-white text-lg rounded-full cursor-pointer hover:bg-gray-700 transition shadow-lg"
-                title="Toggle Admin Mode"
-                onClick={() => setIsAdmin((prev) => !prev)}
-            >
-                {isAdmin ? <FaUserShield onClick={handleUpdate} className="text-yellow-400" /> : <FaPen className="text-blue-400" />}
+            <div className="fixed z-50 bottom-4 right-4 admin-toggle">
+                {/* Floating Button */}
+                <div
+                    className="flex items-center justify-center w-12 h-12 bg-gray-800 text-white text-lg rounded-full cursor-pointer hover:bg-gray-700 transition shadow-lg"
+                    title="Toggle Admin Mode"
+                    onClick={() => setShowOptions((prev) => !prev)}
+                >
+                    <FaUserShield className="text-yellow-400" />
+                </div>
+
+                {/* Dropdown Menu */}
+                {showOptions && (
+                    <div className="absolute bottom-16 right-0 bg-white shadow-lg rounded-md py-2 w-32">
+                        <button
+                            className="flex items-center px-4 py-2 text-gray-800 hover:bg-gray-200 w-full"
+                            onClick={() => {
+                                setEditing((prev) => !prev);
+                                setIsAdmin(!isAdmin);
+                            }}
+                        >
+                            {editing ? (<div className="flex items-center" onClick={handleUpdate}>
+                                <FaSave className="mr-2" />
+                                Save
+                            </div>)
+                                : (<div className="flex items-center" ><FaEdit className="mr-2" />Edit</div>)}
+
+                        </button>
+                        <button
+                            className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-200 w-full"
+                            onClick={() => {
+                                handleLogout();
+                                setShowOptions(false); // Close menu only on logout
+                            }}
+                        >
+                            <FaSignOutAlt className="mr-2" /> Logout
+                        </button>
+                    </div>
+                )}
             </div>
 
 
@@ -248,12 +302,15 @@ const RestroInfo = () => {
                                         setEditingField("phone");
 
                                     }}>
+                                        <div className="absolute -top-2 -right-3 z-20 flex item-center shadow-md cursor-pointer justify-center p-1 bg-white border rounded-full" >
 
-                                        <EditIcon
-                                            size={14}
-                                            className="absolute -top-2 -right-4 cursor-pointer pointer-events-auto z-10"
+                                            <EditIcon
+                                                size={14}
+                                                className="w-2 h-2 text-green-500 "
 
-                                        />
+                                            />
+                                        </div>
+
                                     </div>
                                 )}
                             </div>
@@ -284,13 +341,15 @@ const RestroInfo = () => {
                                         setEditingField("instagram");
 
                                     }}
+                                        className="absolute top-5 -right-0 z-20 flex item-center shadow-md cursor-pointer justify-center p-1 bg-white border rounded-full"
                                     >
 
                                         <EditIcon
                                             size={14}
-                                            className="absolute top-5 -right-0 cursor-pointer pointer-events-auto z-10"
+                                            className="w-2 h-2 text-green-500"
 
                                         />
+
                                     </div>
                                 )}
                             </div>
@@ -330,11 +389,13 @@ const RestroInfo = () => {
                                 e.stopPropagation(); // Ensure event isn't blocked
                                 setEditingField("heading");
 
-                            }}>
+                            }}
+                                className="absolute -top-2 -right-3 z-20 flex item-center shadow-md cursor-pointer justify-center p-1 bg-white border rounded-full"
+                            >
 
                                 <EditIcon
                                     size={12}
-                                    className="absolute -top-2 -right-4 cursor-pointer pointer-events-auto z-10"
+                                    className="text-green-500 h-2 w-2"
 
                                 />
                             </div>
@@ -357,11 +418,12 @@ const RestroInfo = () => {
                                 e.stopPropagation(); // Ensure event isn't blocked
                                 setEditingField("description");
 
-                            }}>
+                            }}
+                                className="absolute -top-2 -right-3 z-20 flex item-center shadow-md cursor-pointer justify-center p-1 bg-white border rounded-full">
 
                                 <EditIcon
                                     size={12}
-                                    className="absolute -top-2 -right-4 cursor-pointer pointer-events-auto z-10"
+                                    className="w-2 h-2 text-green-500"
 
                                 />
                             </div>

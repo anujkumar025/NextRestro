@@ -29,18 +29,22 @@ const FoodItem = ({ item, menuStyle, theme }) => {
         }
     };
     const handleEditFood = () => {
-        setEditFlag(true)
-        setFlag(true)
         localStorage.setItem("menuItem", JSON.stringify(item));
         console.log(localStorage.getItem("menuItem"))
+        setEditFlag(true)
+        setFlag(true)
     }
+    const cardBg = theme === "custom" ? customTheme.card : theme.cardBg;
+    const textColor = theme === "custom" ? customTheme.text : theme.text;
+
     return (
         <>
             {/* Grid Style (style-1) */}
-            {menuStyle === "style-1" && (
+            {menuStyle === "grid" && (
                 <div
 
-                    className={`relative w-full rounded-md shadow-lg overflow-hidden ${theme.cardBg}`}>
+                    className={`relative w-full rounded-md shadow-lg overflow-hidden`}
+                    style={{ backgroundColor: cardBg }}>
                     {isAdmin && (
                         <div
                             className="">
@@ -68,8 +72,10 @@ const FoodItem = ({ item, menuStyle, theme }) => {
 
                     {/* Food Info */}
                     <div className={`mb-2 px-1 flex justify-between items-center`}>
-                        <h3 className={`text-xs md:text-md lg:text-lg font-mono ${theme.text}`}>{item.name}</h3>
-                        <p className={`text-xs md:px-4 lg:px-8 md:text-md font-mono font-extrabold${theme.text}`}>{item.price}</p>
+                        <h3 className={`text-xs md:text-md lg:text-lg font-mono`}
+                            style={{ color: textColor }}>{item.name}</h3>
+                        <p className={`text-xs md:px-4 lg:px-8 md:text-md font-mono font-extrabold `}
+                            style={{ color: textColor }}>₹{item.price}</p>
                     </div>
                 </div>
             )
@@ -77,8 +83,9 @@ const FoodItem = ({ item, menuStyle, theme }) => {
 
             {/* Stacked Style (style-2) */}
             {
-                menuStyle === "style-2" && (
-                    <div className={`flex w-full shadow-lg p-1 rounded-sm  ${theme.cardBg}`}>
+                menuStyle === "stacked" && (
+                    <div className={`flex w-full shadow-lg p-1 rounded-sm`}
+                        style={{ backgroundColor: cardBg }}>
                         {/* Image */}
 
                         <div className="relative w-20 h-18">
@@ -87,20 +94,23 @@ const FoodItem = ({ item, menuStyle, theme }) => {
 
                         {/* Food Details */}
                         <div className="flex-1 flex flex-col justify-start gap-2 ml-4">
-                            <h3 className={`text-md font-bold md:text-md font-mono font-bold ${theme.text}`}>{item.name}</h3>
-                            <p className={` md:text-md text-xs font-mono font-light ${theme.text}`}>{item.price}</p>
+                            <h3 className={`text-md font-bold md:text-md font-mono font-bold`}
+                                style={{ color: textColor }}
+                            >{item.name}</h3>
+                            <p className={` md:text-md text-xs font-mono font-light`}
+                                style={{ color: textColor }}>₹{item.price}</p>
                         </div>
                         {
                             isAdmin && <div className="relative">
 
-                                <div className="absolute z-20 right-10 flex item-center shadow-md cursor-pointer justify-center p-1 bg-white border rounded-full">
+                                <div className="absolute z-20 right-5 flex item-center shadow-md cursor-pointer justify-center p-1 bg-white border rounded-full"
+                                    onClick={deleteMenuItem}>
                                     <DeleteIcon
-                                        onClick={deleteMenuItem}
-                                        className="text-red-500 w-3 h-3" />
+                                        className="text-red-500 w-2 h-2" />
                                 </div>
                                 <div
                                     onClick={handleEditFood} className="absolute z-20 right-0 flex item-center cursor-pointer justify-center p-1 bg-white border rounded-full">
-                                    <EditIcon className="text-green-500 w-3 h-3" />
+                                    <EditIcon className="text-green-500 w-2 h-2" />
                                 </div>
                             </div>
                         }

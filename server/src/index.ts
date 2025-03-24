@@ -101,6 +101,7 @@ app.post("/api/login", async (req: Request, res: Response): Promise<any> => {
     }
 });
 
+
 // Update restaurant profile (excluding email, password, and menu)
 app.put(
     "/api/update",
@@ -112,22 +113,15 @@ app.put(
     async (req: Request, res: Response): Promise<any> => {
         try {
             const restaurantId = (req as any).restaurant.id;
-            let { name, description, phone, instagram } = req.body;
-            // Extract colors into an object with explicit typing
-            const colors: Record<string, string> = Object.keys(req.body)
-            .filter(key => key.startsWith('colors.'))
-            .reduce((acc: Record<string, string>, key) => {
-            const colorKey = key.split('.')[1]; // Extract 'dark', 'medium', 'light'
-            acc[colorKey] = req.body[key];
-            return acc;
-            }, {} as Record<string, string>);
-
-            // Remove original color properties from req.body
-            Object.keys(colors).forEach(key => delete req.body[`colors.${key}`]);
-
-            // Add the transformed colors object to req.body
-            req.body.colors = colors;
-
+            let { name, description, phone, instagram ,customizeTheme} = req.body;
+             if (typeof customizeTheme === "string") {
+                try {
+                    customizeTheme = JSON.parse(customizeTheme);
+                } catch (error) {
+                    return res.status(400).json({ message: "Invalid customizeTheme format" });
+                }
+            }
+           
             // Handle image uploads
             const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
             const profilePicture = files?.profilePicture?.[0]?.buffer.toString("base64");
@@ -141,7 +135,7 @@ app.put(
                     description,
                     phone,
                     instagram,
-                    colors, // Now properly formatted as an object
+                    customizeTheme, // Now properly formatted as an object
                     ...(profilePicture && { profilePicture }), // Update only if new image is provided
                     ...(bannerPicture && { bannerPicture }),
                 },
@@ -370,7 +364,47 @@ app.get("/api/restaurant/:id/menu", async (req: Request, res: Response): Promise
         res.status(500).json({ message: "Internal Server Error❌" });
     }
 });
+app.put(
+    "/api/menu/:id",
+    authenticate,
+    upload.single("image"), // Handle image upload
+    async (req: Request, res: Response): Promise<any> => {
+        try {
+            const { id } = req.params; // Get menu item ID from URL
+            const { name, description, category, foodType, price } = req.body;
 
+            // Validate input
+            if (!name && !description && !category && !foodType && !price && !req.file) {
+                return res.status(400).json({ message: "At least one field is required to update" });
+            }
+
+            // Handle image upload
+            const image = req.file ? req.file.buffer.toString("base64") : undefined;
+
+            // Prepare update object
+            const updateFields: any = {};
+            if (name) updateFields.name = name;
+            if (description) updateFields.description = description;
+            if (category) updateFields.category = category;
+            if (foodType) updateFields.foodType = foodType;
+            if (price) updateFields.price = price;
+            if (image) updateFields.image = image;
+
+            // Find and update the menu item
+            const updatedMenuItem = await Menu.findByIdAndUpdate(id, updateFields, { new: true, runValidators: true });
+
+            if (!updatedMenuItem) {
+                return res.status(404).json({ message: "Menu item not found" });
+            }
+
+            res.status(200).json({ message: "Menu item updated successfully", updatedMenuItem });
+
+        } catch (error) {
+            console.error("Error updating menu item:", error);
+            res.status(500).json({ message: "Internal Server Error", error });
+        }
+    }
+);
 
 
 
