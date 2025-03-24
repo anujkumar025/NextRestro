@@ -9,7 +9,7 @@ import { useRestaurant } from "@/Context/RestaurantContext";
 
 
 const RestroInfo = () => {
-    const { themes, setCustomTheme } = useRestaurant();
+    const { menuStyle, setMenuStyle, themes, setCustomTheme, } = useRestaurant();
 
     const [showOptions, setShowOptions] = useState(false)
     const [editing, setEditing] = useState(false);
@@ -24,6 +24,7 @@ const RestroInfo = () => {
         instagram: null,
         heading: null,
         description: null,
+
         customizeTheme: null,
 
     });
@@ -216,6 +217,10 @@ const RestroInfo = () => {
         document.addEventListener("click", handleClickOutside);
         return () => document.removeEventListener("click", handleClickOutside);
     }, []);
+    const handleLogout = () => {
+        localStorage.removeItem("authToken")
+        localStorage.clear()
+    }
 
     return (
         <>
