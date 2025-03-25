@@ -122,7 +122,7 @@ const RestroInfo = () => {
             // Create updated navData
             console.log("updated", data)
 
-            setMenuStyle(data.menuType)
+            // setMenuStyle(data.menuType)
 
 
 
