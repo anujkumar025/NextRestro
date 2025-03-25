@@ -113,7 +113,8 @@ app.put(
     async (req: Request, res: Response): Promise<any> => {
         try {
             const restaurantId = (req as any).restaurant.id;
-            let { name, description, phone, instagram ,customizeTheme} = req.body;
+
+            let { name, description, phone, instagram ,customizeTheme,menuType} = req.body;
              if (typeof customizeTheme === "string") {
                 try {
                     customizeTheme = JSON.parse(customizeTheme);
@@ -121,6 +122,7 @@ app.put(
                     return res.status(400).json({ message: "Invalid customizeTheme format" });
                 }
             }
+            console.log(menuType)
            
             // Handle image uploads
             const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
@@ -135,6 +137,7 @@ app.put(
                     description,
                     phone,
                     instagram,
+                    menuType,
                     customizeTheme, // Now properly formatted as an object
                     ...(profilePicture && { profilePicture }), // Update only if new image is provided
                     ...(bannerPicture && { bannerPicture }),
@@ -213,7 +216,7 @@ app.put(
     async (req: Request, res: Response): Promise<any> => {
         try {
             const { id } = req.params; // Get menu item ID from URL
-            const { name, description, category, foodType, price } = req.body;
+            const { name, description, category, foodType, price} = req.body;
 
             // Validate input
             if (!name && !description && !category && !foodType && !price && !req.file) {

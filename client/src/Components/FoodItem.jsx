@@ -65,7 +65,7 @@ const FoodItem = ({ item, menuStyle, theme }) => {
                     )}
 
                     {/* Image Section */}
-                    <div className="relative w-full h-18">
+                    <div className="relative w-full h-24 md:h-30 lg:h-40 xl:h-50">
                         <Image src={item.image} alt={item.name} layout="fill" objectFit="cover" className="" />
 
                     </div>

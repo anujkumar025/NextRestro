@@ -17,6 +17,7 @@ interface IMenu extends Document {
     foodType?: string;
     price: number;
     image?: string;
+    
 }
 
 const menuSchema = new Schema<IMenu>({
@@ -39,6 +40,8 @@ interface IRestaurant extends Document {
     instagram?: string;
     profilePicture?: string;
     bannerPicture?: string;
+    menuType?:string;
+   
     customizeTheme?: {
         bgColor: string;
         cardBgColor: string;
@@ -57,6 +60,8 @@ const restaurantSchema = new Schema<IRestaurant>({
     instagram: { type: String },
     profilePicture: { type: String },
     bannerPicture: { type: String },
+    menuType:{type:String,default:"grid"},
+    
     customizeTheme: {
         type: {
             bg: { type: String },

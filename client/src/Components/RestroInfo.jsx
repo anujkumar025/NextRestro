@@ -24,7 +24,7 @@ const RestroInfo = () => {
         instagram: null,
         heading: null,
         description: null,
-
+        menuStyle: null,
         customizeTheme: null,
 
     });
@@ -56,6 +56,7 @@ const RestroInfo = () => {
                     phone: data.phone || "+91 8762340134",
                     instagram: data.instagram || "7juned7",
                     customizeTheme: data.customizeTheme,
+                    menuType: data.menuStyle,
                     description: data.description || "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
                     colors: data.colors || { dark: "#000000", light: "#ffffff" },
                 });
@@ -65,7 +66,8 @@ const RestroInfo = () => {
                         ...data.customizeTheme, // Merge fetched theme with existing custom theme
                     }));
                 }
-
+                
+                setMenuStyle(data.menuType)
             } catch (error) {
                 console.error("Error fetching profile:", error.response?.data || error.message);
             }
@@ -94,8 +96,8 @@ const RestroInfo = () => {
 
 
 
+
     const handleUpdate = async () => {
-        console.log("Before sending:", themes.custom);
 
         const formData = new FormData();
         formData.append("name", navData.heading);
@@ -103,7 +105,7 @@ const RestroInfo = () => {
         formData.append("phone", navData.phone);
         formData.append("instagram", navData.instagram);
         formData.append("customizeTheme", JSON.stringify(themes.custom));
-
+        formData.append("menuType", menuStyle);
 
         // Append images if changed
         if (navData.logoFile) formData.append("profilePicture", navData.logoFile);
@@ -120,7 +122,7 @@ const RestroInfo = () => {
             // Create updated navData
             console.log("updated", data)
 
-
+            setMenuStyle(data.menuType)
 
 
 

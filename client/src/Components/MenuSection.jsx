@@ -30,7 +30,7 @@ const MenuSection = () => {
     // Fetch menu when restaurantId is available
     useEffect(() => {
 
-        console.log(totalFood)
+        console.log("running")
         const fetchMenu = async () => {
             try {
                 const response = await fetch(`http://localhost:5000/api/restaurant/${restaurantId}/menu`);
@@ -170,13 +170,13 @@ const MenuSection = () => {
             {/* Food Items Section */}
             <div className="my-4">
                 {loading ? (
-                    <div className={menuStyle === "style-1" ? "grid grid-cols-2 md:grid-cols-3 gap-1" : "flex flex-wrap gap-2"}>
+                    <div className={menuStyle === "grid" ? "grid grid-cols-3 md:grid-cols-3 gap-1" : "flex flex-wrap gap-2"}>
                         {Array(6).fill("").map((_, index) => (
                             <SkeletonCard key={index} menuStyle={menuStyle} />
                         ))}
                     </div>
                 ) : (
-                    <div className={menuStyle === "style-1" ? "grid grid-cols-3 md:grid-cols-3 gap-2" : "flex flex-wrap gap-4"}>
+                    <div className={menuStyle === "grid" ? "grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-3" : "flex flex-wrap gap-4"}>
                         {filteredItems.length > 0 ? (
                             filteredItems.map((item) => (
                                 <FoodItem key={item._id} item={item} menuStyle={menuStyle} theme={themes[theme]} flag={flag} setFlag={setFlag} />
