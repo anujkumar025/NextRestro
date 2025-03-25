@@ -2,22 +2,28 @@
 
 import { useState, useEffect } from 'react';
 import { FaRegWindowClose } from 'react-icons/fa';
-
+import { useRestaurant } from "@/Context/RestaurantContext";
 const AddFood = ({ flag, setFlag }) => {
-    const [foodData, setFoodData] = useState(() => {
-        const storedItem = localStorage.getItem("menuItem");
-        return storedItem
-            ? JSON.parse(storedItem)
-            : {
+    const { editFlag, setEditFlag } = useRestaurant();
+    const [foodData, setFoodData] = useState();
+    useEffect(() => {
+        if (editFlag) {
+            const storedItem = localStorage.getItem("menuItem");
+            if (storedItem) {
+                setFoodData(JSON.parse(storedItem));
+            }
+        } else {
+            setFoodData({
                 name: "",
                 category: "",
                 price: "",
                 image: null,
                 imageFile: null,
-            };
-    });
+            });
+        }
+    }, [editFlag]);
 
-    console.log(flag)
+
 
     const [animate, setAnimate] = useState(false);
     const [slideIn, setSlideIn] = useState(false);
@@ -76,6 +82,7 @@ const AddFood = ({ flag, setFlag }) => {
             if (response.ok) {
                 setFoodData({ name: '', category: '', price: '', image: null, imageFile: null });
                 setFlag(false);
+                setEditFlag(false)
             } else {
                 alert(result?.message || 'Failed to add item');
             }
@@ -84,10 +91,62 @@ const AddFood = ({ flag, setFlag }) => {
             alert('Something went wrong!');
         }
     };
+    const handleUpdate = async () => {
+        try {
+            if (!foodData.name || !foodData.category || !foodData.price) {
+                alert("Please fill in all fields before updating.");
+                return;
+            } const storedItem = localStorage.getItem("menuItem");
+            const parsedItem = storedItem ? JSON.parse(storedItem) : null;
+            const itemId = parsedItem?._id;
+
+            const formData = new FormData();
+            formData.append("name", foodData.name);
+            formData.append("category", foodData.category);
+            formData.append("price", foodData.price);
+
+            if (foodData.imageFile) {
+                formData.append("image", foodData.imageFile);
+            }
+
+            const response = await fetch(`http://localhost:5000/api/menu/${itemId}`, {
+                method: "PUT",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                },
+                body: formData,
+            });
+
+            if (response.ok) {
+
+                setFoodData({
+                    name: "",
+                    category: "",
+                    price: "",
+                    image: null,
+                    imageFile: null,
+                });
+                setFlag(false);
+                setEditFlag(false);
+            } else {
+                alert(result?.message || "Failed to update item");
+            }
+        } catch (error) {
+            console.error("Error updating item:", error);
+            alert("Something went wrong while updating!");
+        }
+    };
 
     useEffect(() => {
-        localStorage.setItem("menuItem", JSON.stringify(foodData));
-    }, [foodData]);
+        if (editFlag) {
+
+            const storedItem = localStorage.getItem("menuItem");
+            if (storedItem) {
+                setFoodData(JSON.parse(storedItem)); // Update state when localStorage changes
+            }
+        }
+
+    }, [editFlag]);
     if (!animate) return null;
 
     return (
@@ -99,11 +158,14 @@ const AddFood = ({ flag, setFlag }) => {
                     <h2 className="text-lg font-semibold text-yellow-500">Add New Food Item</h2>
                     <FaRegWindowClose
                         className="text-yellow-500 cursor-pointer hover:text-red-500 transition-colors duration-300"
-                        onClick={() => setFlag(false)}
+                        onClick={() => {
+                            setEditFlag(false)
+                            setFlag(false)
+                        }}
                     />
                 </div>
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <form className="flex flex-col gap-4">
                     <input
                         type="text"
                         name="name"
@@ -148,9 +210,14 @@ const AddFood = ({ flag, setFlag }) => {
                         )}
                     </div>
 
-                    <button type="submit" className="bg-yellow-500 px-4 py-2 rounded-md">
-                        Add Food
-                    </button>
+
+                    {
+                        editFlag ? (<button onClick={handleUpdate} className="bg-yellow-500 px-4 py-2 rounded-md">
+                            Update Food
+                        </button>) : (<button onClick={handleSubmit} className="bg-yellow-500 px-4 py-2 rounded-md">
+                            Add Food
+                        </button>)
+                    }
                 </form>
             </div>
         </div>

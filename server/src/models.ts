@@ -73,6 +73,5 @@ const restaurantSchema = new Schema<IRestaurant>({
 
 const Restaurant = model<IRestaurant>("Restaurant", restaurantSchema);
 
-
 export { Menu, IMenu, Restaurant, IRestaurant };
     
