@@ -40,6 +40,7 @@ interface IRestaurant extends Document {
     instagram?: string;
     profilePicture?: string;
     bannerPicture?: string;
+    isVerified?: boolean,
     customizeTheme?: {
         bgColor: string;
         cardBgColor: string;
@@ -58,6 +59,7 @@ const restaurantSchema = new Schema<IRestaurant>({
     instagram: { type: String },
     profilePicture: { type: String },
     bannerPicture: { type: String },
+    isVerified: {type: Boolean, default: false},
     customizeTheme: {
         type: {
             bgColor: { type: String },

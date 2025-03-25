@@ -1,11 +1,13 @@
 import express, { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import { IMenu, Menu, Restaurant } from "./models";
+import { IMenu, IRestaurant, Menu, Restaurant } from "./models";
 import jwt from "jsonwebtoken";
 import { authenticate } from "./authorize";
 import multer from "multer";
 import cors from "cors";
 import { config } from "dotenv";
+import { sendVerificationEmail } from "./emailService";
+
 
 config();
 const PORT = 5000;
@@ -17,6 +19,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 app.use(express.json());
+const jwtSecret = process.env.JWT_SECRET as string;
 
 interface UserPayload {
     id: string;
@@ -54,18 +57,62 @@ app.post("/api/register", async (req: Request, res: Response): Promise<any> => {
         const newRestaurant = new Restaurant({
             email,
             password: hashedPassword,
+            isVerified: false, // Add a verification flag
         });
 
         await newRestaurant.save();
 
-        // Generate JWT token
-        const token = jwt.sign({ id: newRestaurant._id, email }, process.env.JWT_SECRET as string, {
-            expiresIn: "7d",
-        });
+        // Generate verification token
+        const verificationToken = jwt.sign(
+            { id: newRestaurant._id, email },
+            jwtSecret,
+            { expiresIn: "1d" }
+        );
 
-        res.status(201).json({ message: "Restaurant registered successfully", token });
+        // Send verification email
+        await sendVerificationEmail(newRestaurant.email, verificationToken);
+
+        res.status(201).json({ message: "Restaurant registered successfully. Please verify your email." });
 
     } catch (error) {
+        console.error("Error registering restaurant:", error);
+        res.status(500).json({ message: "Server error❌", error });
+    }
+});
+
+app.post("/api/verify-email", async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { token } = req.params;
+
+        if (!token) {
+            return res.status(400).json({ message: "Verification token is required." });
+        }
+
+        // Verify JWT Token
+        const decoded = jwt.verify(token, jwtSecret) as { id: string; email: string };
+
+        if (!decoded) {
+            return res.status(400).json({ message: "Invalid or expired token." });
+        }
+
+        // Find the restaurant in the database
+        const restaurant = await Restaurant.findById(decoded.id);
+        if (!restaurant) {
+            return res.status(404).json({ message: "Restaurant not found." });
+        }
+
+        if (restaurant.isVerified) {
+            return res.status(400).json({ message: "Email already verified." });
+        }
+
+        // Update restaurant's verification status
+        restaurant.isVerified = true;
+        await restaurant.save();
+
+        res.status(200).json({ message: "Email verified successfully. You can now log in!" });
+
+    } catch (error) {
+        console.error("Error verifying email:", error);
         res.status(500).json({ message: "Server error❌", error });
     }
 });
@@ -90,7 +137,7 @@ app.post("/api/login", async (req: Request, res: Response): Promise<any> => {
         // Generate JWT token
         const token = jwt.sign(
             { id: restaurant._id, name: restaurant.name },
-            process.env.JWT_SECRET as string,
+            jwtSecret,
             { expiresIn: "7d" }
         );
 
@@ -112,22 +159,22 @@ app.put(
     async (req: Request, res: Response): Promise<any> => {
         try {
             const restaurantId = (req as any).restaurant.id;
-            let { name, description, phone, instagram } = req.body;
+            let { name, description, phone, instagram, customizeTheme } = req.body;
             
             // Extract customizeTheme into an object with explicit typing
-            const customizeTheme: Record<string, string> = Object.keys(req.body)
-            .filter(key => key.startsWith('customizeTheme.'))
-            .reduce((acc: Record<string, string>, key) => {
-                const themeKey = key.split('.')[1]; // Extract 'bgColor', 'cardBgColor', 'textColor', 'highlightColor'
-                acc[themeKey] = req.body[key];
-                return acc;
-            }, {} as Record<string, string>);
+            // const customizeTheme: Record<string, string> = Object.keys(req.body)
+            // .filter(key => key.startsWith('customizeTheme.'))
+            // .reduce((acc: Record<string, string>, key) => {
+            //     const themeKey = key.split('.')[1]; // Extract 'bgColor', 'cardBgColor', 'textColor', 'highlightColor'
+            //     acc[themeKey] = req.body[key];
+            //     return acc;
+            // }, {} as Record<string, string>);
 
             // Remove original theme properties from req.body
             Object.keys(customizeTheme).forEach(key => delete req.body[`customizeTheme.${key}`]);
 
             // Add the transformed customizeTheme object to req.body
-            req.body.customizeTheme = customizeTheme;
+            // req.body.customizeTheme = customizeTheme;
 
             // Handle image uploads
             const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
