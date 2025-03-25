@@ -31,6 +31,7 @@ const menuSchema = new Schema<IMenu>({
 
 const Menu = model<IMenu>("Menu", menuSchema);
 
+// Restaurant Schema 
 interface IRestaurant extends Document {
     name?: string;
     description?: string;
@@ -42,6 +43,7 @@ interface IRestaurant extends Document {
     bannerPicture?: string;
     menuType?:string;
    
+    isVerified?: boolean,
     customizeTheme?: {
         bgColor: string;
         cardBgColor: string;
@@ -62,20 +64,19 @@ const restaurantSchema = new Schema<IRestaurant>({
     bannerPicture: { type: String },
     menuType:{type:String,default:"grid"},
     
+    isVerified: {type: Boolean, default: false},
     customizeTheme: {
         type: {
-            bg: { type: String },
-            cardBg: { type: String },
-            text: { type: String },
-            highlight: { type: String }
+            bgColor: { type: String },
+            cardBgColor: { type: String },
+            textColor: { type: String },
+            highlightColor: { type: String }
         }
     },
     menu: [{ type: Schema.Types.ObjectId, ref: "Menu" }]
 }, { timestamps: true });
 
 const Restaurant = model<IRestaurant>("Restaurant", restaurantSchema);
-
-
 
 export { Menu, IMenu, Restaurant, IRestaurant };
     
