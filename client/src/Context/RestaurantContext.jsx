@@ -38,7 +38,7 @@ export const RestaurantProvider = ({ children }) => {
         }
     }, [theme, customTheme]);
     useEffect(() => {
-        console.log("Updated Custom Theme:", customTheme);
+        // console.log("Updated Custom Theme:", customTheme);
     }, [customTheme]);
 
     const themes = {

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import AddFood from "./AddFood";
 import FoodItem from "./FoodItem";
 import SkeletonCard from "./Loders/SkeletonCard";
+import URL from "@/lib/address";
 
 
 const MenuSection = () => {
@@ -25,7 +26,7 @@ const MenuSection = () => {
 
         setTheme("custom"); // Ensure rerender when a custom theme is selected
     };
-    const restaurantId = "67d93b95dd42f9512a7b44d6"
+    const restaurantId = "67d7ea5473ca82e8115923bd"
 
     // Fetch menu when restaurantId is available
     useEffect(() => {
@@ -33,17 +34,19 @@ const MenuSection = () => {
         console.log("running")
         const fetchMenu = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/api/restaurant/${restaurantId}/menu`);
+                const response = await fetch(`${URL}/api/restaurant/${restaurantId}/menu`);
 
                 if (!response.ok) {
                     throw new Error("Failed to fetch menu");
                 }
 
                 const data = await response.json();
+                // console.log(data);
                 const updatedMenu = data.map((item) => ({
                     ...item,
                     image: item.image ? item.image : null,
                 }));
+                // console.log(updatedMenu);
 
                 setMenuItems(updatedMenu);
                 setFilteredItems(updatedMenu);

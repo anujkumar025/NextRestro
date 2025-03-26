@@ -34,3 +34,20 @@ export const sendVerificationEmail = async (to: string, token: string) => {
         console.error("Error sending email:", error);
     }
 };
+
+export const sendResetPasswordEmail = async (to: string, otp: string) => {
+    const mailOptions = {
+        from: email,
+        to,
+        subject: "Reset Your Password",
+        text: `Your OTP for password reset is: ${otp}. This OTP is valid for a limited time only.`,
+        html: `<p>Your OTP for password reset is: <strong>${otp}</strong>. This OTP is valid for a limited time only.</p>`,
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log("Password reset email sent to:", to);
+    } catch (error) {
+        console.error("Error sending email:", error);
+    }
+};

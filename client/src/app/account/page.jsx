@@ -2,16 +2,12 @@
 
 import { useState, useContext } from "react";
 import { useRouter } from "next/navigation";
-
-
-
 import axios from "axios";
 import Link from "next/link";
-// import { RestaurantContexts } from "@/Contexts/RestaurantsContext";
+import URL from "@/lib/address";
 
 const Register = () => {
-    // const { restaurantId } = useContext(RestaurantContexts);
-    const [newUser, setNewUser] = useState(true);
+    const [loginPage, setLoginPage] = useState(true);
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -33,7 +29,7 @@ const Register = () => {
         setSuccess("");
 
         try {
-            const { data } = await axios.post("http://localhost:5001/api/register", formData);
+            const { data } = await axios.post(`${URL}/api/register`, formData);
             console.log(data);
 
             localStorage.setItem("authToken", data.token);
@@ -53,7 +49,7 @@ const Register = () => {
         setSuccess("");
 
         try {
-            const { data } = await axios.post("http://localhost:5000/api/login", formData);
+            const { data } = await axios.post(`${URL}/api/login`, formData);
             console.log(data);
 
             localStorage.setItem("authToken", data.token);
@@ -100,7 +96,7 @@ const Register = () => {
                     required
                 />
 
-                {newUser ? (
+                {loginPage ? (
                     <button
                         type="button"
                         onClick={handleLogin}
@@ -135,15 +131,15 @@ const Register = () => {
 
                 <div className="my-4 text-center">
                     <div>
-                        {newUser ? "Don't have an account?" : "Have an account?"}
+                        {loginPage ? "Don't have an account?" : "Have an account?"}
                         <span
-                            onClick={() => setNewUser((prev) => !prev)}
+                            onClick={() => setLoginPage((prev) => !prev)}
                             className="text-[#FFD700] cursor-pointer px-1.5"
                         >
-                            {newUser ? "Sign up" : "Log in"}
+                            {loginPage ? "Sign up" : "Log in"}
                         </span>
                     </div>
-                    <Link href="/accounts/forgetPassword" className="cursor-pointer">
+                    <Link href="/account/forgetpassword" className="cursor-pointer">
                         Forget Password?
                     </Link>
                 </div>

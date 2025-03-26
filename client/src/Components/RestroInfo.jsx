@@ -48,7 +48,7 @@ const RestroInfo = () => {
                 });
 
                 localStorage.setItem("restaurantId", data._id);
-                console.log(data)
+                // console.log(data)
                 setNavData({
                     logo: data.profilePicture ? `${data.profilePicture}` : null,
                     banner: data.bannerPicture ? `${data.bannerPicture}` : null,

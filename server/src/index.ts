@@ -6,7 +6,7 @@ import { authenticate } from "./authorize";
 import multer from "multer";
 import cors from "cors";
 import { config } from "dotenv";
-import { sendVerificationEmail } from "./emailService";
+import { sendVerificationEmail, sendResetPasswordEmail } from "./emailService";
 
 
 config();
@@ -20,6 +20,7 @@ const upload = multer({ storage: storage });
 
 app.use(express.json());
 const jwtSecret = process.env.JWT_SECRET as string;
+const otpStorage = new Map<string, { otp: string; expiresAt: number }>();
 
 interface UserPayload {
     id: string;
@@ -32,6 +33,17 @@ declare module "express" {
         user?: UserPayload;
     }
 }
+
+// Cleanup function to remove expired OTPs
+setInterval(() => {
+    const now = Date.now();
+    for (const [email, { expiresAt }] of otpStorage.entries()) {
+        if (expiresAt < now) {
+            otpStorage.delete(email);
+            console.log(`OTP for ${email} expired and removed`);
+        }
+    }
+}, 5 * 60 * 1000); // Runs every 5 minutes
 
 // Simple test route
 app.get("/api/", (req: Request, res: Response) => {
@@ -82,7 +94,7 @@ app.post("/api/register", async (req: Request, res: Response): Promise<any> => {
 
 app.post("/api/verify-email", async (req: Request, res: Response): Promise<any> => {
     try {
-        const { token } = req.params;
+        const { token } = req.body;
 
         if (!token) {
             return res.status(400).json({ message: "Verification token is required." });
@@ -102,7 +114,7 @@ app.post("/api/verify-email", async (req: Request, res: Response): Promise<any> 
         }
 
         if (restaurant.isVerified) {
-            return res.status(400).json({ message: "Email already verified." });
+            return res.status(200).json({ message: "Email already verified." });
         }
 
         // Update restaurant's verification status
@@ -114,6 +126,52 @@ app.post("/api/verify-email", async (req: Request, res: Response): Promise<any> 
     } catch (error) {
         console.error("Error verifying email:", error);
         res.status(500).json({ message: "Server error❌", error });
+    }
+});
+
+// Endpoint to send OTP
+app.post("/api/send-otp", async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ message: "Email is required" });
+
+        const user = await Restaurant.findOne({ email });
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+        otpStorage.set(email, { otp, expiresAt: Date.now() + 10 * 60 * 1000 }); // Expires in 10 mins
+
+        await sendResetPasswordEmail(email, otp);
+        res.status(200).json({ message: "OTP sent to your email" });
+    } catch (error) {
+        console.error("Error sending OTP:", error);
+        res.status(500).json({ message: "Server error", error });
+    }
+});
+
+// Endpoint to reset password
+app.post("/api/reset-password", async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { email, otp, newPassword } = req.body;
+        if (!email || !otp || !newPassword)
+            return res.status(400).json({ message: "All fields are required" });
+
+        const storedOtp = otpStorage.get(email);
+        if (!storedOtp || storedOtp.otp !== otp || storedOtp.expiresAt < Date.now()) {
+            return res.status(400).json({ message: "Invalid or expired OTP" });
+        }
+
+        const user = await Restaurant.findOne({ email });
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        await user.save();
+
+        otpStorage.delete(email); // Remove OTP after successful password reset
+        res.status(200).json({ message: "Password reset successfully" });
+    } catch (error) {
+        console.error("Error resetting password:", error);
+        res.status(500).json({ message: "Server error", error });
     }
 });
 
@@ -169,7 +227,7 @@ app.put(
                     return res.status(400).json({ message: "Invalid customizeTheme format" });
                 }
             }
-            console.log(menuType)
+            // console.log(menuType)
            
             // Handle image uploads
             const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
@@ -204,7 +262,6 @@ app.put(
         }
     }
 );
-
 
 
 // Add menu item to restaurant
@@ -415,49 +472,6 @@ app.get("/api/restaurant/:id/menu", async (req: Request, res: Response): Promise
         res.status(500).json({ message: "Internal Server Error❌" });
     }
 });
-app.put(
-    "/api/menu/:id",
-    authenticate,
-    upload.single("image"), // Handle image upload
-    async (req: Request, res: Response): Promise<any> => {
-        try {
-            const { id } = req.params; // Get menu item ID from URL
-            const { name, description, category, foodType, price } = req.body;
-
-            // Validate input
-            if (!name && !description && !category && !foodType && !price && !req.file) {
-                return res.status(400).json({ message: "At least one field is required to update" });
-            }
-
-            // Handle image upload
-            const image = req.file ? req.file.buffer.toString("base64") : undefined;
-
-            // Prepare update object
-            const updateFields: any = {};
-            if (name) updateFields.name = name;
-            if (description) updateFields.description = description;
-            if (category) updateFields.category = category;
-            if (foodType) updateFields.foodType = foodType;
-            if (price) updateFields.price = price;
-            if (image) updateFields.image = image;
-
-            // Find and update the menu item
-            const updatedMenuItem = await Menu.findByIdAndUpdate(id, updateFields, { new: true, runValidators: true });
-
-            if (!updatedMenuItem) {
-                return res.status(404).json({ message: "Menu item not found" });
-            }
-
-            res.status(200).json({ message: "Menu item updated successfully", updatedMenuItem });
-
-        } catch (error) {
-            console.error("Error updating menu item:", error);
-            res.status(500).json({ message: "Internal Server Error", error });
-        }
-    }
-);
-
-
 
 // Start server
 app.listen(PORT, () => {
