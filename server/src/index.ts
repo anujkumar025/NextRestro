@@ -119,6 +119,7 @@ app.post("/api/verify-email", async (req: Request, res: Response): Promise<any> 
 
         // Update restaurant's verification status
         restaurant.isVerified = true;
+        restaurant.trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
         await restaurant.save();
 
         res.status(200).json({ message: "Email verified successfully. You can now log in!" });
@@ -429,6 +430,12 @@ app.get("/api/:id", async (req: Request, res: Response): Promise<any> => {
             return res.status(404).json({ message: "Restaurant not found" });
         }
 
+        // Manually check trial expiration
+        const isTrialActive = restaurant.trialEndsAt && new Date() < new Date(restaurant.trialEndsAt);
+        if (!isTrialActive) {
+            return res.status(403).json({ message: "Your free trial has ended. Please upgrade to continue." });
+        }
+
         // Convert images to Base64 format if they exist
         const restaurantWithImages = {
             ...restaurant,
@@ -458,6 +465,12 @@ app.get("/api/restaurant/:id/menu", async (req: Request, res: Response): Promise
 
         if (!restaurant || !restaurant.menu || restaurant.menu.length === 0) {
             return res.status(404).json({ message: "Restaurant not found or no menu available" });
+        }
+
+        // Manually check trial expiration
+        const isTrialActive = restaurant.trialEndsAt && new Date() < new Date(restaurant.trialEndsAt);
+        if (!isTrialActive) {
+            return res.status(403).json({ message: "Your free trial has ended. Please upgrade to continue." });
         }
 
         // Now TypeScript correctly recognizes menu items as IMenu objects

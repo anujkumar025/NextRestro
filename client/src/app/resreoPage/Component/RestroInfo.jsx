@@ -4,7 +4,7 @@ import React, { Suspense } from "react";
 const LazyImage = React.lazy(() => import("./LazyImage"));
 
 const RestroInfo = async () => {
-    const restaurantId = "67d93b95dd42f9512a7b44d6";
+    const restaurantId = "67d7ea5473ca82e8115923bd";
 
     const response = await fetch(`http://localhost:5000/api/${restaurantId}`);
     const data = await response.json();
