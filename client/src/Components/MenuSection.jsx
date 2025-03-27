@@ -26,7 +26,7 @@ const MenuSection = () => {
 
         setTheme("custom"); // Ensure rerender when a custom theme is selected
     };
-    const restaurantId = "67d7ea5473ca82e8115923bd"
+    const restaurantId = localStorage.getItem("restaurantId")
 
     // Fetch menu when restaurantId is available
     useEffect(() => {

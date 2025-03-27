@@ -9,207 +9,28 @@ import { useRestaurant } from "@/Context/RestaurantContext";
 
 
 const RestroInfo = () => {
-    const { menuStyle, setMenuStyle, themes, setCustomTheme, } = useRestaurant();
+    
 
-    const [showOptions, setShowOptions] = useState(false)
-    const [editing, setEditing] = useState(false);
+
+    const {
+        navData,
+        setNavData,
+        editingField,
+        setEditingField,
+        headingRef,
+        descriptionRef,
+        phoneRef,
+        instagramRef,
+        handleTextChange,
+        handleImageChange,
+        handleBannerChange,
+        handleUpdate,
+    } = useRestroEditing();
+
+    const [showOptions, setShowOptions] = useState(false);
     const { isAdmin, setIsAdmin } = useRestaurant();
-    const restaurantId = "67d93b95dd42f9512a7b44d6"
-    const [navData, setNavData] = useState({
-        logo: null,
-        logoFile: null,
-        banner: null,
-        bannerFile: null,
-        phone: null,
-        instagram: null,
-        heading: null,
-        description: null,
-        menuStyle: null,
-        customizeTheme: null,
+    const [editing, setEditing] = useState(false);
 
-    });
-
-
-
-    const [editingField, setEditingField] = useState(null);
-    const headingRef = useRef(null);
-    const descriptionRef = useRef(null);
-    const phoneRef = useRef(null);
-    const instagramRef = useRef(null);
-
-    // Fetch API Data (Next.js prefers environment variables for API URLs)
-    useEffect(() => {
-        if (!restaurantId) return;
-
-        const fetchNavData = async () => {
-            try {
-                const { data } = await axios.get(`http://localhost:5000/api/restaurant`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
-                });
-
-                localStorage.setItem("restaurantId", data._id);
-                // console.log(data)
-                setNavData({
-                    logo: data.profilePicture ? `${data.profilePicture}` : null,
-                    banner: data.bannerPicture ? `${data.bannerPicture}` : null,
-                    heading: data.name || "Explore Our Delicious Menu",
-                    phone: data.phone || "+91 8762340134",
-                    instagram: data.instagram || "7juned7",
-                    customizeTheme: data.customizeTheme,
-                    menuType: data.menuStyle,
-                    description: data.description || "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-                    colors: data.colors || { dark: "#000000", light: "#ffffff" },
-                });
-                if (data.customizeTheme) {
-                    setCustomTheme((prevTheme) => ({
-                        ...prevTheme,
-                        ...data.customizeTheme, // Merge fetched theme with existing custom theme
-                    }));
-                }
-                
-                setMenuStyle(data.menuType)
-            } catch (error) {
-                console.error("Error fetching profile:", error.response?.data || error.message);
-            }
-        };
-        fetchNavData();
-    }, []);
-
-
-    // Click outside to stop editing
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (
-                (editingField === "heading" && headingRef.current && !headingRef.current.contains(event.target)) ||
-                (editingField === "description" && descriptionRef.current && !descriptionRef.current.contains(event.target)) ||
-                (editingField === "phone" && phoneRef.current && !phoneRef.current.contains(event.target)) ||
-                (editingField === "instagram" && instagramRef.current && !instagramRef.current.contains(event.target))
-            ) {
-                setEditingField(null);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [editingField]);
-
-
-
-
-
-
-    const handleUpdate = async () => {
-
-        const formData = new FormData();
-        formData.append("name", navData.heading);
-        formData.append("description", navData.description);
-        formData.append("phone", navData.phone);
-        formData.append("instagram", navData.instagram);
-        formData.append("customizeTheme", JSON.stringify(themes.custom));
-        formData.append("menuType", menuStyle);
-
-        // Append images if changed
-        if (navData.logoFile) formData.append("profilePicture", navData.logoFile);
-        if (navData.bannerFile) formData.append("bannerPicture", navData.bannerFile);
-
-        try {
-            const { data } = await axios.put("http://localhost:5000/api/update", formData, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                    "Content-Type": "multipart/form-data", // Required for FormData
-                },
-            });
-
-            // Create updated navData
-            console.log("updated", data)
-
-            // setMenuStyle(data.menuType)
-
-
-
-        } catch (error) {
-            console.error("Error updating profile:", error.response?.data || error.message);
-        }
-    };
-
-
-    // Click outside to stop editing
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (
-                (editingField === "heading" && headingRef.current && !headingRef.current.contains(event.target)) ||
-                (editingField === "description" && descriptionRef.current && !descriptionRef.current.contains(event.target)) ||
-                (editingField === "phone" && phoneRef.current && !phoneRef.current.contains(event.target)) ||
-                (editingField === "instagram" && instagramRef.current && !instagramRef.current.contains(event.target))
-            ) {
-                setEditingField(null);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [editingField]);
-    // Handle text updates
-    const handleTextChange = (key, value) => {
-        setNavData((prev) => ({ ...prev, [key]: value }));
-    };
-    // Handle image uploads (logo)
-    const handleImageChange = (e) => {
-        if (!isAdmin) return; // Only allow admin to update
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setNavData((prev) => ({
-                    ...prev,
-                    logo: reader.result,
-                    logoFile: file,
-                }));
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-
-    // Handle banner image upload
-    const handleBannerChange = (e) => {
-        if (!isAdmin) return;
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setNavData((prev) => ({
-                    ...prev,
-                    banner: reader.result,
-                    bannerFile: file,
-                }));
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (
-                (editingField === "heading" && headingRef.current && !headingRef.current.contains(event.target)) ||
-                (editingField === "description" && paragraphRef.current && !paragraphRef.current.contains(event.target)) ||
-                (editingField === "phone" && phoneRef.current && !phoneRef.current.contains(event.target)) ||
-                (editingField === "instagram" && instagramRef.current && !instagramRef.current.contains(event.target))
-            ) {
-                setTimeout(() => setEditingField(null), 100); // Small delay to prevent flickering
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [editingField]);
-
-    // ✅ API call to update restaurant profile
-
-    useEffect(() => {
-        if (isAdmin) {
-            localStorage.setItem("navData", JSON.stringify(navData));
-        }
-
-        console.log(editingField)
-    }, [navData, isAdmin]);
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (!event.target.closest(".admin-toggle")) {
@@ -219,10 +40,11 @@ const RestroInfo = () => {
         document.addEventListener("click", handleClickOutside);
         return () => document.removeEventListener("click", handleClickOutside);
     }, []);
+
     const handleLogout = () => {
-        localStorage.removeItem("authToken")
-        localStorage.clear()
-    }
+        localStorage.removeItem("authToken");
+        localStorage.clear();
+    };
 
     return (
         <>

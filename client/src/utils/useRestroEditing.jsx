@@ -3,7 +3,7 @@ import axios from "axios";
 import { useRestaurant } from "@/Context/RestaurantContext";
 
 const useRestroEditing = () => {
-    const { menuStyle, setMenuStyle, isAdmin, flag, setFlag, totalFood, setTotalFood, theme, setTheme, themes, customTheme, setCustomTheme } = useRestaurant();
+    const { menuStyle, setMenuStyle, themes, setCustomTheme } = useRestaurant();
     console.log(menuStyle)
     const [navData, setNavData] = useState({
         logo: null,
@@ -29,7 +29,7 @@ const useRestroEditing = () => {
     const descriptionRef = useRef(null);
     const phoneRef = useRef(null);
     const instagramRef = useRef(null);
-    console.log(menuStyle, "hello")
+
     useEffect(() => {
 
         const fetchNavData = async () => {
@@ -141,6 +141,7 @@ const useRestroEditing = () => {
                 },
             });
 
+            setMenuStyle(menuStyle)
 
         } catch (error) {
             console.error("Error updating profile:", error.response?.data || error.message);
