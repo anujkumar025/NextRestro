@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { FaRegWindowClose } from 'react-icons/fa';
 import { useRestaurant } from "@/Context/RestaurantContext";
+import BACKEND_URL from '@/lib/address';
+
 const AddFood = ({ flag, setFlag }) => {
     const { editFlag, setEditFlag } = useRestaurant();
     const [foodData, setFoodData] = useState();
@@ -44,9 +46,11 @@ const AddFood = ({ flag, setFlag }) => {
 
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
+        console.log("file: ", file);
         if (file) {
             const imageUrl = URL.createObjectURL(file);
             setFoodData({ ...foodData, image: imageUrl, imageFile: file });
+            console.log(imageUrl);
         }
     };
 
@@ -68,7 +72,7 @@ const AddFood = ({ flag, setFlag }) => {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/api/additem', {
+            const response = await fetch(`${BACKEND_URL}/menu/additem`, {
                 method: 'PUT',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('authToken')}`,
@@ -109,7 +113,7 @@ const AddFood = ({ flag, setFlag }) => {
                 formData.append("image", foodData.imageFile);
             }
 
-            const response = await fetch(`http://localhost:5000/api/menu/${itemId}`, {
+            const response = await fetch(`${BACKEND_URL}/menu/${itemId}`, {
                 method: "PUT",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("authToken")}`,

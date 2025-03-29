@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useRestaurant } from "@/Context/RestaurantContext";
+import URL from "@/lib/address";
 
 const useRestroEditing = () => {
     const { menuStyle, setMenuStyle, themes, setCustomTheme } = useRestaurant();
-    console.log(menuStyle)
+    // console.log(menuStyle)
     const [navData, setNavData] = useState({
         logo: null,
         logoFile: null,
@@ -34,8 +35,9 @@ const useRestroEditing = () => {
 
         const fetchNavData = async () => {
             try {
-                const { data } = await axios.get(`http://localhost:5000/api/restaurant`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
+                const restroId = localStorage.getItem("restaurantId");
+                const { data } = await axios.get(`${URL}/restaurant/${restroId}`, {
+                    // headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
                 });
 
                 localStorage.setItem("restaurantId", data._id);
@@ -50,7 +52,7 @@ const useRestroEditing = () => {
                     description: data.description || "Lorem ipsum...",
                     colors: data.colors || { dark: "#000000", light: "#ffffff" },
                 });
-                console.log(data)
+                // console.log(data)
                 if (data.customizeTheme) {
                     setCustomTheme((prevTheme) => ({
                         ...prevTheme,
@@ -115,7 +117,7 @@ const useRestroEditing = () => {
             reader.readAsDataURL(file);
         }
     };
-    console.log(menuStyle)
+    // console.log(menuStyle)
     const handleUpdate = async () => {
         const formData = new FormData();
         formData.append("name", navData.heading);
@@ -134,7 +136,7 @@ const useRestroEditing = () => {
         if (navData.bannerFile) formData.append("bannerPicture", navData.bannerFile);
 
         try {
-            const { data } = await axios.put("http://localhost:5000/api/update", formData, {
+            const { data } = await axios.put(`${URL}/restaurant/update`, formData, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("authToken")}`,
                     "Content-Type": "multipart/form-data",

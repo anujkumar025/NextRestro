@@ -29,7 +29,7 @@ const Register = () => {
         setSuccess("");
 
         try {
-            const { data } = await axios.post(`${URL}/api/register`, formData);
+            const { data } = await axios.post(`${URL}/auth/register`, formData);
             console.log(data);
 
             localStorage.setItem("authToken", data.token);
@@ -49,10 +49,11 @@ const Register = () => {
         setSuccess("");
 
         try {
-            const { data } = await axios.post(`${URL}/api/login`, formData);
+            const { data } = await axios.post(`${URL}/auth/login`, formData);
             console.log(data);
 
             localStorage.setItem("authToken", data.token);
+            localStorage.setItem("restaurantId", data.id);
             setSuccess("Login successful! 🎉");
 
 

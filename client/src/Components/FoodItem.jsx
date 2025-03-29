@@ -6,6 +6,8 @@ import Image from "next/image";
 import React from "react";
 import axios from "axios";
 import EditIcon from "../utils/EditIcon"
+import URL from "@/lib/address";
+
 const FoodItem = ({ item, menuStyle, theme }) => {
     const { isAdmin, flag, setFlag, editFlag, setEditFlag, totalFood, setTotalFood } = useRestaurant();
 
@@ -13,9 +15,9 @@ const FoodItem = ({ item, menuStyle, theme }) => {
     const deleteMenuItem = async () => {
         const itemId = item._id;
         const token = localStorage.getItem("authToken");
-        console.log(token)
+        // console.log(itemId)
         try {
-            const response = await axios.delete(`http://localhost:5000/api/menu/${itemId}`, {
+            const response = await axios.delete(`${URL}/menu/${itemId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`, // Assuming authentication is needed
                 },
@@ -30,7 +32,7 @@ const FoodItem = ({ item, menuStyle, theme }) => {
     };
     const handleEditFood = () => {
         localStorage.setItem("menuItem", JSON.stringify(item));
-        console.log(localStorage.getItem("menuItem"))
+        // console.log(localStorage.getItem("menuItem"))
         setEditFlag(true)
         setFlag(true)
     }

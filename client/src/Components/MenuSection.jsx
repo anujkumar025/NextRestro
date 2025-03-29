@@ -6,6 +6,7 @@ import AddFood from "./AddFood";
 import FoodItem from "./FoodItem";
 import SkeletonCard from "./Loders/SkeletonCard";
 import URL from "@/lib/address";
+import axios from "axios";
 
 
 const MenuSection = () => {
@@ -26,27 +27,30 @@ const MenuSection = () => {
 
         setTheme("custom"); // Ensure rerender when a custom theme is selected
     };
-    const restaurantId = localStorage.getItem("restaurantId")
+    
 
+    const restaurantId = localStorage.getItem("restaurantId");
     // Fetch menu when restaurantId is available
     useEffect(() => {
 
         console.log("running")
         const fetchMenu = async () => {
             try {
-                const response = await fetch(`${URL}/api/restaurant/${restaurantId}/menu`);
-
-                if (!response.ok) {
+                // console.log(restaurantId);
+                const response = await axios.get(`${URL}/menu/${restaurantId}`);
+                // console.log(response);
+                console.log(response.status);
+                if (!(response.status === 200)) {
                     throw new Error("Failed to fetch menu");
                 }
 
-                const data = await response.json();
-                // console.log(data);
+                const data = response.data;
+                console.log("data: ", data);
                 const updatedMenu = data.map((item) => ({
                     ...item,
                     image: item.image ? item.image : null,
                 }));
-                // console.log(updatedMenu);
+                console.log("updatedMenu: ", updatedMenu.data);
 
                 setMenuItems(updatedMenu);
                 setFilteredItems(updatedMenu);

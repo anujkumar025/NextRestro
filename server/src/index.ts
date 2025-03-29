@@ -131,7 +131,7 @@ app.post("/api/verify-email", async (req: Request, res: Response): Promise<any> 
 });
 
 // Endpoint to send OTP
-app.post("/api/send-otp", async (req: Request, res: Response): Promise<any> => {
+app.post("/api/send-otp", async (req: Request, res: Response): Promise<any> =>{
     try {
         const { email } = req.body;
         if (!email) return res.status(400).json({ message: "Email is required" });
@@ -200,7 +200,7 @@ app.post("/api/login", async (req: Request, res: Response): Promise<any> => {
             { expiresIn: "7d" }
         );
 
-        res.status(200).json({ message: "Login successful", token });
+        res.status(200).json({ message: "Login successful", token, id: restaurant._id });
 
     } catch (error) {
         res.status(500).json({ message: "Server error❌", error });
